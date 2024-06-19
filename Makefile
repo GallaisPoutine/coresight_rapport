@@ -1,3 +1,8 @@
+# Needs the following packages under Arch Linux:
+# texinfo texlive-basic texlive-bin texlive-binextra texlive-fontsextra
+# texlive-fontsrecommended texlive-langfrench texlive-latex texlive-latexextra
+# texlive-latexrecommended texlive-pictures texmaker
+#
 # You want latexmk to *always* run, because make does not have all the info.
 # Also, include non-file targets in .PHONY so they are run regardless of any
 # file of the given name existing.
