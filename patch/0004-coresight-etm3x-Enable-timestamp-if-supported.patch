@@ -1,0 +1,192 @@
+From 1f6131edd26a43af88ba436deb7f04ae7022a6fd Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Rapha=C3=ABl=20GALLAIS-POU?= <raphael.gallais-pou@st.com>
+Date: Mon, 17 Aug 2020 11:38:05 +0200
+Subject: [ETMv3 Coresight 4/5] coresight: etm3x: Enable timestamp if supported
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+In stm32mp15 boards, default activation of timestamp generator's clock
+counter is not compatible because of unnecessary consumption of the board
+and systematic activation despite occasional use. To overcome this problem,
+a tsgen node is created in the device tree and in ETM's nodes a property
+links to it.
+This property is parsed with a call to the syscon API and in the case the
+tsgen is implemented, TSGEN_CNTCR is set to 1 using a regmap. By default
+if this property is not found in the device tree, it does not activate
+this bit.
+In etm_enable_hw() ETMCCER is read to see if timestamp is supported and in
+the case it is, ETMCR_TIMESTAMP_EN bit is enable to activate timestamp
+packets.
+
+Signed-off-by: Raphaël GALLAIS-POU <raphael.gallais-pou@st.com>
+---
+ arch/arm/boot/dts/stm32mp151.dtsi             | 11 ++++---
+ drivers/hwtracing/coresight/coresight-etm.h   |  5 ++++
+ drivers/hwtracing/coresight/coresight-etm3x.c | 30 ++++++++++++++++++-
+ 3 files changed, 41 insertions(+), 5 deletions(-)
+
+diff --git a/arch/arm/boot/dts/stm32mp151.dtsi b/arch/arm/boot/dts/stm32mp151.dtsi
+index 804c9d6c7b24..3292ad1c60d3 100644
+--- a/arch/arm/boot/dts/stm32mp151.dtsi
++++ b/arch/arm/boot/dts/stm32mp151.dtsi
+@@ -1492,6 +1492,11 @@
+ 		};
+ #endif
+ 
++                tsgen: tsgen@50082000 {
++			compatible = "syscon";
++                        reg = <0x50082000 0x1000>;
++                };
++
+ 		funnel@50091000 {
+ 			compatible = "arm,coresight-dynamic-funnel", "arm,primecell";
+ 			reg = <0x50091000 0x1000>;
+@@ -1519,7 +1524,6 @@
+ 					};
+ 				};
+ 
+-/*#if 0*/
+ 				port@2 {
+ 					reg = <2>;
+ 					funnel_in_port2: endpoint {
+@@ -1627,7 +1631,6 @@
+ 			compatible = "arm,coresight-stm", "arm,primecell";
+ 			reg = <0x500a0000 0x1000>, <0x90000000 0x1000000>, <0x50094000 0x1000>;
+ 			reg-names = "stm-base", "stm-stimulus-base", "cti-base";
+-
+ 			clocks = <&rcc CK_TRACE>;
+ 			clock-names = "apb_pclk";
+ 
+@@ -1645,6 +1648,7 @@
+ 			compatible = "arm,coresight-etm3x", "arm,primecell";
+ 			reg = <0x500dc000 0x1000>;
+ 			cpu = <&cpu0>;
++                        st,syscon = <&tsgen 0x0>;
+ 			clocks = <&rcc CK_TRACE>;
+ 			clock-names = "apb_pclk";
+ 
+@@ -1657,12 +1661,12 @@
+ 			};
+ 		};
+ 
+-/*#if 0*/
+ 		/* Cortex A7-2 */
+ 		etm@500dd000 {
+ 			compatible = "arm,coresight-etm3x", "arm,primecell";
+ 			reg = <0x500dd000 0x1000>;
+ 			cpu = <&cpu1>;
++                        st,syscon = <&tsgen 0x0>;
+ 			clocks = <&rcc CK_TRACE>;
+ 			clock-names = "apb_pclk";
+ 
+@@ -1674,7 +1678,6 @@
+ 				};
+ 			};
+ 		};
+-/*#endif*/
+ 
+ 		hash1: hash@54002000 {
+ 			compatible = "st,stm32f756-hash";
+diff --git a/drivers/hwtracing/coresight/coresight-etm.h b/drivers/hwtracing/coresight/coresight-etm.h
+index f3ab96eaf44e..0626b63379be 100644
+--- a/drivers/hwtracing/coresight/coresight-etm.h
++++ b/drivers/hwtracing/coresight/coresight-etm.h
+@@ -77,6 +77,8 @@
+ #define ETM_MAX_ADDR_CMP	16
+ #define ETM_MAX_CNTR		4
+ #define ETM_MAX_CTXID_CMP	3
++/* Timestamp generator registers */
++#define TSG_CNTCR               0x000
+ 
+ /* Register definition */
+ /* ETMCR - 0x00 */
+@@ -140,6 +142,9 @@
+ 				 ETM_ADD_COMP_0		|	\
+ 				 ETM_EVENT_NOT_A)
+ 
++/* Timestamp registers definition */
++#define TSG_CNTCR_EN            BIT(0)
++
+ /**
+  * struct etm_config - configuration information related to an ETM
+  * @mode:	controls various modes supported by this ETM/PTM.
+diff --git a/drivers/hwtracing/coresight/coresight-etm3x.c b/drivers/hwtracing/coresight/coresight-etm3x.c
+index e2cb6873c3f2..c7f2664663d3 100644
+--- a/drivers/hwtracing/coresight/coresight-etm3x.c
++++ b/drivers/hwtracing/coresight/coresight-etm3x.c
+@@ -29,6 +29,8 @@
+ #include <linux/clk.h>
+ #include <linux/perf_event.h>
+ #include <asm/sections.h>
++#include <linux/mfd/syscon.h>
++#include <linux/regmap.h>
+ 
+ #include "coresight-etm.h"
+ #include "coresight-etm-perf.h"
+@@ -46,6 +48,8 @@ static struct etm_drvdata *etmdrvdata[NR_CPUS];
+ 
+ static enum cpuhp_state hp_online;
+ 
++static struct regmap *tsgenmap;
++
+ /*
+  * Memory mapped writes to clear os lock are not supported on some processors
+  * and OS lock must be unlocked before any memory mapped access on such
+@@ -59,6 +63,13 @@ static void etm_os_unlock(struct etm_drvdata *drvdata)
+ 	isb();
+ }
+ 
++
++static int etm_enable_tsgen(void)
++{
++        return regmap_update_bits(tsgenmap, TSG_CNTCR,
++                             TSG_CNTCR_EN, 0x1);
++}
++
+ static void etm_set_pwrdwn(struct etm_drvdata *drvdata)
+ {
+ 	u32 etmcr;
+@@ -379,7 +390,12 @@ static int etm_enable_hw(struct etm_drvdata *drvdata)
+ 	etmcr = etm_readl(drvdata, ETMCR);
+ 	/* Clear setting from a previous run if need be */
+ 	etmcr &= ~ETM3X_SUPPORTED_OPTIONS;
+-	etmcr |= drvdata->port_size;
++
++        /* Enable timestamping if implemented */
++        if (drvdata->etmccer & ETMCCER_TIMESTAMP)
++                etmcr |= ETMCR_TIMESTAMP_EN;
++
++        etmcr |= drvdata->port_size;
+ 	etmcr |= ETMCR_ETM_EN;
+ 	etm_writel(drvdata, config->ctrl | etmcr, ETMCR);
+ 	etm_writel(drvdata, config->trigger_event, ETMTRIGGER);
+@@ -791,6 +807,7 @@ static int etm_probe(struct amba_device *adev, const struct amba_id *id)
+ 	struct etm_drvdata *drvdata;
+ 	struct resource *res = &adev->res;
+ 	struct coresight_desc desc = { 0 };
++        struct device_node *np = dev->of_node;
+ 
+ 	drvdata = devm_kzalloc(dev, sizeof(*drvdata), GFP_KERNEL);
+ 	if (!drvdata)
+@@ -884,6 +901,17 @@ static int etm_probe(struct amba_device *adev, const struct amba_id *id)
+ 		drvdata->boot_enable = true;
+ 	}
+ 
++        if (of_property_read_bool(np, "st,syscon")) {
++                tsgenmap = syscon_regmap_lookup_by_phandle(np, "st,syscon");
++                if (IS_ERR(tsgenmap))
++                        return PTR_ERR(tsgenmap);
++                else {
++                        ret = etm_enable_tsgen();
++                        if (ret)
++                                dev_err(dev, "Error updating TSG_CNTCR reg: %d\n", ret);
++                }
++        }
++
+ 	return 0;
+ 
+ err_arch_supported:
+-- 
+2.17.1
+

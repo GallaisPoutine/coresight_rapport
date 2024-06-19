@@ -1,0 +1,56 @@
+%--------------
+% Page de garde
+%--------------
+
+\makeatletter
+	\begin{titlepage}
+	\centering
+		\begin{figure}[h]
+			\begin{minipage}[c]{.46\linewidth}
+				\centering
+				\includegraphics[width=0.8\textwidth]{\pathAutre/Logo_ESEO.jpg}
+			\end{minipage}
+			\hfill%
+			\begin{minipage}[c]{.46\linewidth}
+				\centering
+				\includegraphics[width=0.8\textwidth]{\pathAutre/Logo_STM.png}
+			\end{minipage}
+		\end{figure}
+
+    \vspace{1cm}
+    \vfill
+%                \rule{\linewidth}{0.6mm} \\
+    		{\Huge \textbf{\@title}} \\
+    		\vspace{1em}
+    		{\Large \textsl{CoreSight - Plateforme de Débogage}}\\
+%                \rule{\linewidth}{0.6mm}
+    	\vspace{10em}
+    	\begin{flushleft}
+		{\LARGE
+                        \vspace{2em}	
+        		\@author\\
+        		Tuteur : Christophe ROULLIER\\
+                        Référent ESEO : Mickael CLAVREUL\\
+			\vspace{2em}
+                        \textsl{Version : \VersionDocument\ - Révision : \RevisionDocument\\}
+
+		}    		
+    	\end{flushleft}
+
+	\noindent\fbox {
+		\parbox{\textwidth} {
+		\begin{flushleft}
+			{\LARGE 
+				Option : Systèmes Embarqués\\
+                                Entreprise d'accueil : STMicroelectronics\\
+				Domaine entreprise : Automotive et IoT\\
+                                Fonction du tuteur : Développeur kernel\\
+				Confidentialité : niveau 0\\
+			}
+		\end{flushleft}
+		}
+    	}
+
+    \vfill
+	\end{titlepage}
+\makeatother

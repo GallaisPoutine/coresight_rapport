@@ -1,0 +1,232 @@
+From 6d72e5dda1ae99c8816e14cb3d38b8f2be04507d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Rapha=C3=ABl=20GALLAIS-POU?= <raphael.gallais-pou@st.com>
+Date: Thu, 12 Mar 2020 11:11:40 +0100
+Subject: [ETMv3 Coresight 1/5] ARM: dts: stm32: add Coresight devices
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Add nodes of Coresight subsystem for stm32mp15 boards.
+
+Signed-off-by: Raphaël GALLAIS-POU <raphael.gallais-pou@st.com>
+---
+ arch/arm/boot/dts/stm32mp151.dtsi | 203 ++++++++++++++++++++++++++++++
+ 1 file changed, 203 insertions(+)
+
+diff --git a/arch/arm/boot/dts/stm32mp151.dtsi b/arch/arm/boot/dts/stm32mp151.dtsi
+index 373fe3bbb607..804c9d6c7b24 100644
+--- a/arch/arm/boot/dts/stm32mp151.dtsi
++++ b/arch/arm/boot/dts/stm32mp151.dtsi
+@@ -1473,6 +1473,209 @@
+ 			status = "disabled";
+ 		};
+ 
++#if 0
++		/* Cortex M4 */
++		etm@50041000 {
++			compatible = "arm,coresight-etm3x", "arm,primecell";
++			reg = <0x50041000 0x1000>;
++			cpu = <&cpu0>;
++			clocks = <&rcc CK_TRACE>;
++			clock-names = "apb_pclk";
++
++			out-ports {
++				port {
++					etm0_out_port: endpoint {
++						remote-endpoint = <&funnel_in_port3>;
++					};
++				};
++			};
++		};
++#endif
++
++		funnel@50091000 {
++			compatible = "arm,coresight-dynamic-funnel", "arm,primecell";
++			reg = <0x50091000 0x1000>;
++			clocks = <&rcc CK_TRACE>;
++			clock-names = "apb_pclk";
++
++			/* funnel input ports */
++			in-ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				port@0 {
++					reg = <0>;
++					funnel_in_port0: endpoint {
++						slave-mode;
++						remote-endpoint = <&stm_out_port>;
++					};
++				};
++
++				port@1 {
++					reg = <1>;
++					funnel_in_port1: endpoint {
++						slave-mode; /* A7-1 input */
++						remote-endpoint = <&etm1_out_port>;
++					};
++				};
++
++/*#if 0*/
++				port@2 {
++					reg = <2>;
++					funnel_in_port2: endpoint {
++						slave-mode; /* A7-2 input */
++						remote-endpoint = <&etm2_out_port>;
++					};
++				};
++#if 0
++
++				port@3 {
++					reg = <3>;
++					funnel_in_port3: endpoint {
++						slave-mode; /* M4 input */
++						remote-endpoint = <&etm0_out_port>;
++					};
++				};
++#endif
++
++				port@4 {
++					reg = <4>;
++					funnel_in_port4: endpoint {
++						slave-mode; /* REPLICATOR input */
++						remote-endpoint = <&replicator_out_port0>;
++					};
++				};
++			};
++
++			/* funnel output ports */
++			out-ports {
++				port {
++					funnel_out_port0: endpoint {
++						remote-endpoint = <&etf_in_port>;
++					};
++				};
++			};
++		};
++
++		etf@50092000 {
++			compatible = "arm,coresight-tmc", "arm,primecell";
++			reg = <0x50092000 0x1000>;
++			clocks = <&rcc CK_TRACE>;
++			clock-names = "apb_pclk";
++
++			in-ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				port {
++					etf_in_port: endpoint {
++						slave-mode;
++						remote-endpoint = <&funnel_out_port0>;
++					};
++				};
++			};
++
++			out-ports {
++				port {
++					etf_out_port: endpoint {
++						remote-endpoint = <&tpiu_in_port>;
++					};
++				};
++			};
++		};
++
++		tpiu@50093000 {
++			compatible = "arm,coresight-tpiu", "arm,primecell";
++			reg = <0x50093000 0x1000>;
++			clocks = <&rcc CK_TRACE>;
++			clock-names = "apb_pclk";
++
++			in-ports {
++				port {
++					tpiu_in_port: endpoint {
++						slave-mode;
++						remote-endpoint = <&etf_out_port>;
++					};
++				};
++			};
++		};
++
++		replicator {
++			/*
++			* non-configurable replicators don't show up on the
++			* AMBA bus.  As such no need to add "arm,primecell"
++			*/
++			compatible = "arm,coresight-static-replicator";
++			clocks = <&rcc CK_TRACE>;
++			clock-names = "apb_pclk";
++
++			/* replicator output ports */
++			out-ports {
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				port@0 {
++					reg = <0>;
++					replicator_out_port0: endpoint {
++						remote-endpoint = <&funnel_in_port4>;
++					};
++				};
++			};
++		};
++
++		stm@500a0000 {
++			compatible = "arm,coresight-stm", "arm,primecell";
++			reg = <0x500a0000 0x1000>, <0x90000000 0x1000000>, <0x50094000 0x1000>;
++			reg-names = "stm-base", "stm-stimulus-base", "cti-base";
++
++			clocks = <&rcc CK_TRACE>;
++			clock-names = "apb_pclk";
++
++			out-ports {
++				port {
++					stm_out_port: endpoint {
++						remote-endpoint = <&funnel_in_port0>;
++					};
++				};
++			};
++		};
++
++		/* Cortex A7-1 */
++		etm@500dc000 {
++			compatible = "arm,coresight-etm3x", "arm,primecell";
++			reg = <0x500dc000 0x1000>;
++			cpu = <&cpu0>;
++			clocks = <&rcc CK_TRACE>;
++			clock-names = "apb_pclk";
++
++			out-ports {
++				port {
++					etm1_out_port: endpoint {
++						remote-endpoint = <&funnel_in_port1>;
++					};
++				};
++			};
++		};
++
++/*#if 0*/
++		/* Cortex A7-2 */
++		etm@500dd000 {
++			compatible = "arm,coresight-etm3x", "arm,primecell";
++			reg = <0x500dd000 0x1000>;
++			cpu = <&cpu1>;
++			clocks = <&rcc CK_TRACE>;
++			clock-names = "apb_pclk";
++
++			out-ports {
++				port {
++					etm2_out_port: endpoint {
++						remote-endpoint = <&funnel_in_port2>;
++					};
++				};
++			};
++		};
++/*#endif*/
++
+ 		hash1: hash@54002000 {
+ 			compatible = "st,stm32f756-hash";
+ 			reg = <0x54002000 0x400>;
+-- 
+2.17.1
+

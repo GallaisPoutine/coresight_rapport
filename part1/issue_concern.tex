@@ -1,0 +1,63 @@
+%--------------------------------------------
+% PARTIE 1 : Problématique et enjeux du sujet
+%--------------------------------------------
+
+\section{Problématique et enjeux du sujet}
+\label{chp:part1:issue_concern}
+
+Grace à l'évolution de nouvelles technologies, on assiste à une
+miniaturisation exponentielle des composants et une explosion de leurs
+capacités. Cette croissance se retrouve dans le monde des semiconducteurs où
+de nombreuses solutions se développent chaque année, répondant à divers
+besoins techniques, plus particulièrement, les microprocesseurs et
+microcontrôleurs. \\
+
+Ce sont des systèmes sur puces suffisamment miniaturisés pour associer
+plusieurs composants au sein d'un seul boitier. Ces Systems on Chip (SoCs)
+exécutent des jeux d'instructions à la manière d'un processeur d'ordinateur.
+On les retrouve dans les objets du quotidiens, tels que dans l'électroménager
+ou la téléphonie mobile : des systèmes dont les capacités étaient jusqu'alors
+réservées aux ordinateurs. Ces microprocesseurs présentent donc une grande
+diversité dans leurs domaines d'applications. Leur présentation universelle,
+mais surtout des technologies à un faible coût de revient, expliquent par
+ailleurs leur production quasiment exponentielle d’année en année et leur
+présence récurrente dans notre quotidien. Entre autres, on recense une
+production de plusieurs millions d'unités par mois. \\
+
+% https://thewalkingdeadfrance.org/global-microprocessor-market-covid-updates-3/
+% https://www.thesneaklife.com/2020/02/06/apercu-du-marche-microprocesseur-mondial-2019-2026-intel-qualcomm-apple-amd-freescale/
+% https://news.knowledia.com/CH/fr/articles/rapport-sur-le-marche-unite-de-microprocesseur-serveur-mpu-mondial-2020-37a1c04d7002644204e0163c3b8842d3e608c9c9?source=rss
+% https://www.globenewswire.com/news-release/2020/02/07/1981844/0/en/Global-Microprocessors-Market-Insights-2015-2030-Green-Evolution-Has-Become-an-Urgent-Priority-for-Wireless-NSPs-and-Microprocessor-Manufacturing-Companies.html
+
+% µProc market share: https://www.semiconductors.org/annual-semiconductor-sales-increase-21.6-percent-top-400-billion-for-first-time/
+% https://www.globenewswire.com/news-release/2020/02/07/1981844/0/en/Global-Microprocessors-Market-Insights-2015-2030-Green-Evolution-Has-Become-an-Urgent-Priority-for-Wireless-NSPs-and-Microprocessor-Manufacturing-Companies.html
+
+Le SoC STM32MP1 est la première famille de microprocesseurs commercialisée par
+la société STMicroelectronics. Afin de démontrer ses capacités sur le marché,
+ce microprocesseur doit faire valoir toutes ses caractéristiques. Cette
+mission que l'on m'a confiée répond à un besoin interne chez
+STMicroelectronics.  En effet, dans la version actuelle du microprocesseur
+sont présentés des blocs hardwares non exploitables. Ces composants matériels
+sont dormants en raison des pilotes (ou drivers) dont deux processeurs de la
+carte ne supportaient pas jusqu'à présent.  Pourtant ces IPs sont
+technologiquement les seuls moyens permettant de déboguer dans l'espace noyau.
+Jusqu'à présent des solutions non conventionnelles pour investiguer des points
+sur le SoC étaient présentées. Il s'agit donc d'améliorer les capacités de
+débogage de l'environnement en déployant les outils communautaires et de
+proposer aux clients un moyen plus ergonomique de déboguer. \\
+
+Comme le SoC développé par STMicroeletronics possède la capacité de
+fonctionner avec un OS de type Linux, il est donc soumis aux règles de la
+communauté Linux. L'implémentation d'une nouvelle fonctionnalité au sein de la
+carte éléctronique est également un moyen de contribution sur la communauté
+Open Source. Cela permettrait donc d'enrichir le SoC et d'affirmer
+STMicroelectronics comme acteur du noyau Linux. \\
+
+À moyen et long termes, cette mission pourrait économiquement servir à gagner
+des clients tant en marché de masse qu'à des entreprises consommatrices de
+semiconducteurs ciblées, puisque cela servirait à déboguer plus facilement et
+avec efficience. En effet, les clients vont naturellement se tourner vers des
+solutions ergonomiques où il sera plus simple de développer et déboguer une
+application. Ainsi s'ils ne peuvent pas le faire sur le SoC STM32MP15, ils
+risquent de se tourner vers d'autres solutions, et à terme, l'entreprise
+risque de perdre des clients. \\

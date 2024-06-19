@@ -1,0 +1,93 @@
+%---------------
+% Bibliographie
+%---------------
+
+\newcommand{\uu}[1]{\textcolor{blue}{\underline{\url{#1}}}\\}
+\newcommand{\hu}[2]{\textcolor{blue}{\underline{\href{#1}{#2}}}\\}
+
+\chapter*{Bibliographie}
+\addcontentsline{toc}{chapter}{Annexe 1 : Bibliographie}
+
+\urlstyle{same}
+
+\noindent
+\hu{https://www.st.com/resource/en/reference\_manual/dm00327659-stm32mp157-advanced-armbased-32bit-mpus-stmicroelectronics.pdf}{Manuel de références techniques du
+STM32MP15}
+
+\noindent
+Memory map\\
+Feuille excel interne à ST utilisée
+
+\paragraph*{Device tree}\mbox{}\\
+\noindent
+Documentation générale sur le device tree\\
+\uu{https://elinux.org/Device\_Tree\_Reference}
+\uu{https://elinux.org/images/f/f9/Petazzoni-device-tree-dummies\_0.pdf}
+\uu{https://www.kernel.org/doc/Documentation/devicetree/usage-model.txt}
+
+\noindent
+Implémentation de Coresight dans le device tree\\
+\uu{https://www.kernel.org/doc/Documentation/devicetree/bindings/arm/coresight.txt}
+
+\paragraph*{Coresight}\mbox{}\\
+\noindent
+Documentation générale sur Coresight\\
+\uu{https://www.kernel.org/doc/Documentation/trace/coresight.txt}
+\uu{https://elinux.org/images/b/b3/Hardware\_Assisted\_Tracing\_on\_ARM.pdf}
+\uu{https://wiki.st.com/stm32mpu/wiki/Coresight\_overview}
+
+\noindent
+Code source OpenCSD et ptm2human\\
+\uu{https://github.com/Linaro/OpenCSD/}
+\uu{https://github.com/hwangcc23/ptm2human}
+
+\noindent
+Coresight et PMU\\
+\uu{https://www.linaro.org/blog/coresight-perf-and-the-opencsd-library/}
+
+\noindent
+Coresight et sysfs\\
+\uu{https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-bus-coresight-devices-etm3x}
+\uu{https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-bus-coresight-devices-etm4x}
+
+\noindent
+Spécifications ETMv3 et ETMv4\\
+\uu{https://static.docs.arm.com/ihi0014/q/IHI0014.pdf}
+\uu{https://static.docs.arm.com/ihi0064/d/ihi0064d\_etm\_v4\_architecture\_spec.pdf}
+
+\noindent
+Échange sur le registre TSG\_CNTCR du tsgen\\
+\uu{https://lists.linaro.org/pipermail/coresight/2019-February/002205.html}
+\hu{https://forums.xilinx.com/t5/Embedded-Linux/CoreSight-ETMv4-timestamp-on-Ultrascale/td-p/938913}{Lien vers les forums Xilinx}
+
+\noindent
+Unicité du timestamp generator au sein d'un système Coresight\\
+\uu{https://lists.linaro.org/pipermail/coresight/2020-July/004205.html}
+
+\noindent
+Driver MFD/syscon\\
+\uu{https://www.kernel.org/doc/Documentation/devicetree/bindings/arm/stm32/stm32-syscon.txt}
+\uu{https://www.kernel.org/doc/Documentation/devicetree/bindings/mfd/mfd.txt}
+\uu{https://elinux.org/images/9/9a/Belloni-mfd-regmap-syscon.pdf}
+
+\paragraph*{perf}\mbox{}\\
+\noindent
+Documentation générale sur perf\\
+\uu{http://www.brendangregg.com/perf.html}
+\uu{https://perf.wiki.kernel.org/index.php/Tutorial}
+\uu{https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/tree/tools/perf/design.txt}
+
+\noindent
+Compilation de perf et OpenCSD\\
+\uu{https://github.com/Linaro/OpenCSD/blob/master/HOWTO.md}
+\uu{https://www.linaro.org/blog/opencsd-operation-use-library}
+
+\noindent
+Affinité et parallélisme des threads sur Linux\\
+\hu{https://stackoverflow.com/questions/38962563/how-can-i-run-4-threads-each-on-a-different-coreparallelism}{Stack Overflow}
+\uu{https://stackoverflow.com/questions/24645880/set-cpu-affinity-when-create-a-thread}
+
+\noindent
+perf record\\
+\uu{https://linux.die.net/man/1/perf-record}
+

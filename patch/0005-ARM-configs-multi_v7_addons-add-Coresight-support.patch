@@ -1,0 +1,37 @@
+From 5bcf49e689f259a74e3218267bf223166f4c60b2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Rapha=C3=ABl=20GALLAIS-POU?= <raphael.gallais-pou@st.com>
+Date: Wed, 19 Aug 2020 14:36:20 +0200
+Subject: [ETMv3 Coresight 5/5] ARM: configs: multi_v7_addons: add Coresight
+ support
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Enable Coresight drivers implemented in STM32MP15x boards.
+
+Signed-off-by: Raphaël GALLAIS-POU <raphael.gallais-pou@st.com>
+---
+ arch/arm/configs/fragment-02-multiv7_addons.config | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/arch/arm/configs/fragment-02-multiv7_addons.config b/arch/arm/configs/fragment-02-multiv7_addons.config
+index e6d1cb2206db..09b4b403e306 100644
+--- a/arch/arm/configs/fragment-02-multiv7_addons.config
++++ b/arch/arm/configs/fragment-02-multiv7_addons.config
+@@ -417,3 +417,13 @@ CONFIG_ARM_SMC_MBOX=y
+ # TTY
+ #
+ CONFIG_LEGACY_PTY_COUNT=8
++
++#
++# Coresight drivers
++#
++CONFIG_CORESIGHT=y
++CONFIG_CORESIGHT_LINK_AND_SINK_TMC=y
++CONFIG_CORESIGHT_SINK_TPIU=y
++CONFIG_CORESIGHT_SOURCE_ETM3X=y
++CONFIG_CORESIGHT_STM=y
++CONFIG_CORESIGHT_CPU_DEBUG=y
+-- 
+2.17.1
+

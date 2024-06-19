@@ -1,0 +1,31 @@
+From 5bcf49e689f259a74e3218267bf223166f4c60b2 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Rapha=C3=ABl=20GALLAIS-POU?= <raphael.gallais-pou@st.com>
+Date: Wed, 19 Aug 2020 17:50:58 +0200
+Subject: [ETMv3 Coresight 0/5] *** SUBJECT HERE ***
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+*** BLURB HERE ***
+
+Arnaldo Carvalho de Melo (1):
+  perf diff: Use llabs() with 64-bit values
+
+Raphaël GALLAIS-POU (4):
+  ARM: dts: stm32: add Coresight devices
+  perf cs-etm: Add handle on etm3x
+  coresight: etm3x: Enable timestamp if supported
+  ARM: configs: multi_v7_addons: add Coresight support
+
+ arch/arm/boot/dts/stm32mp151.dtsi             | 206 ++++++++++++++++++
+ .../configs/fragment-02-multiv7_addons.config |  10 +
+ drivers/hwtracing/coresight/coresight-etm.h   |   5 +
+ drivers/hwtracing/coresight/coresight-etm3x.c |  30 ++-
+ tools/perf/arch/arm/util/cs-etm.c             |  97 +++++++--
+ tools/perf/builtin-diff.c                     |   4 +-
+ tools/perf/util/cs-etm.h                      |   1 +
+ 7 files changed, 326 insertions(+), 27 deletions(-)
+
+-- 
+2.17.1
+

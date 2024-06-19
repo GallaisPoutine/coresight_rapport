@@ -1,0 +1,12 @@
+@startuml bus_ports
+
+hide circle
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam classStyle rectangle
+
+"Coresight\nCortex-M4" -right- "Port AHB-AP" : Bus AHB
+"Port AHB-AP" -down- "Port APB-AP" : Bus DAPBUS
+"Port APB-AP" -left- "Coresight\nCortex-A7" : Bus APB-D
+
+@enduml

@@ -1,0 +1,32 @@
+@startuml LINUX_KERNEL_DEV_PROCESS
+
+hide empty description
+skinparam shadowing false
+
+state Développeur {
+	state "Generate patch" as generate
+	state "Submit patch" as submit
+	state "Test" as dev_test
+
+	[*] -up-> Code
+	Code -up-> Debug
+	Debug -right-> Build
+	Build -down-> dev_test
+	dev_test -down-> generate
+	dev_test --> Code
+	generate -down-> submit
+}
+
+state Mainteneur {
+	state "Test" as maint_test
+	
+	[*] -left-> maint_test
+	maint_test -up-> Integrate
+	Integrate -right-> Publish
+	Publish --> maint_test
+}
+
+submit -left-> maint_test
+maint_test -right-> submit
+
+@enduml

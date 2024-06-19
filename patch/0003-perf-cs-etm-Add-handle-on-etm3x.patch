@@ -1,0 +1,193 @@
+From 1b6f40d8004c2cc2f3512a334f57960f2ffe11fe Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Rapha=C3=ABl=20GALLAIS-POU?= <raphael.gallais-pou@st.com>
+Date: Fri, 14 Aug 2020 16:07:33 +0200
+Subject: [ETMv3 Coresight 3/5] perf cs-etm: Add handle on etm3x
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+In most cases, ETMv3 were not managed and returned an error
+when timestamp and context ID needed to be set.
+Rework the cs-etm object to handle ETMv3 cases:
+- Add read-only register ETMCCER to metadata_etmv3_ro
+- Handling of Context ID for both versions of ETM in cs_etm_set_timestamp()
+- Handling of Timestamping for both versions of ETM in cs_etm_set_context_id()
+
+Signed-off-by: Raphaël GALLAIS-POU <raphael.gallais-pou@st.com>
+---
+ tools/perf/arch/arm/util/cs-etm.c | 97 +++++++++++++++++++++++--------
+ tools/perf/util/cs-etm.h          |  1 +
+ 2 files changed, 74 insertions(+), 24 deletions(-)
+
+diff --git a/tools/perf/arch/arm/util/cs-etm.c b/tools/perf/arch/arm/util/cs-etm.c
+index ede040cf82ad..53685820b5a3 100644
+--- a/tools/perf/arch/arm/util/cs-etm.c
++++ b/tools/perf/arch/arm/util/cs-etm.c
+@@ -44,8 +44,9 @@ struct cs_etm_recording {
+ };
+ 
+ static const char *metadata_etmv3_ro[CS_ETM_PRIV_MAX] = {
+-	[CS_ETM_ETMCCER]	= "mgmt/etmccer",
+-	[CS_ETM_ETMIDR]		= "mgmt/etmidr",
++	[CS_ETM_ETMCCR]			= "mgmt/etmccr",
++	[CS_ETM_ETMCCER]		= "mgmt/etmccer",
++	[CS_ETM_ETMIDR]			= "mgmt/etmidr",
+ };
+ 
+ static const char *metadata_etmv4_ro[CS_ETMV4_PRIV_MAX] = {
+@@ -70,13 +71,17 @@ static int cs_etm_set_context_id(struct auxtrace_record *itr,
+ 	ptr = container_of(itr, struct cs_etm_recording, itr);
+ 	cs_etm_pmu = ptr->cs_etm_pmu;
+ 
+-	if (!cs_etm_is_etmv4(itr, cpu))
+-		goto out;
+-
+-	/* Get a handle on TRCIRD2 */
+-	snprintf(path, PATH_MAX, "cpu%d/%s",
+-		 cpu, metadata_etmv4_ro[CS_ETMV4_TRCIDR2]);
+-	err = perf_pmu__scan_file(cs_etm_pmu, path, "%x", &val);
++	if (cs_etm_is_etmv4(itr, cpu)) {
++		/* Get a handle on TRCIRD2 */
++		snprintf(path, PATH_MAX, "cpu%d/%s",
++			 cpu, metadata_etmv4_ro[CS_ETMV4_TRCIDR2]);
++		err = perf_pmu__scan_file(cs_etm_pmu, path, "%x", &val);
++	} else {
++		/* Get a handle on ETMCCR */
++		snprintf(path, PATH_MAX, "cpu%d/%s",
++			 cpu, metadata_etmv3_ro[CS_ETM_ETMCCR]);
++		err = perf_pmu__scan_file(cs_etm_pmu, path, "%x", &val);
++	}
+ 
+ 	/* There was a problem reading the file, bailing out */
+ 	if (err != 1) {
+@@ -85,6 +90,7 @@ static int cs_etm_set_context_id(struct auxtrace_record *itr,
+ 		goto out;
+ 	}
+ 
++	if (cs_etm_is_etmv4(itr, cpu)) {
+ 	/*
+ 	 * TRCIDR2.CIDSIZE, bit [9-5], indicates whether contextID tracing
+ 	 * is supported:
+@@ -92,10 +98,25 @@ static int cs_etm_set_context_id(struct auxtrace_record *itr,
+ 	 *  0b00100 Maximum of 32-bit Context ID size.
+ 	 *  All other values are reserved.
+ 	 */
+-	val = BMVAL(val, 5, 9);
+-	if (!val || val != 0x4) {
+-		err = -EINVAL;
+-		goto out;
++		val = BMVAL(val, 5, 9);
++		if (!val || val != 0x4) {
++			err = -EINVAL;
++			goto out;
++		}
++	} else {
++	/*
++	 * ETMCCR.CONTXTIDCMP, bit [25-24], indicates the number of contextID
++	 * comparators:
++	 *  0b00 No ContextID comparators
++	 *  0b01 1 ContextID comparator
++	 *  0b10 2 ContextID comparators
++	 *  0b11 3 ContextID comparators
++	 */
++		val = BMVAL(val, 24, 25);
++		if (!val) {
++			err = -EINVAL;
++			goto out;
++		}
+ 	}
+ 
+ 	/* All good, let the kernel know */
+@@ -119,13 +140,17 @@ static int cs_etm_set_timestamp(struct auxtrace_record *itr,
+ 	ptr = container_of(itr, struct cs_etm_recording, itr);
+ 	cs_etm_pmu = ptr->cs_etm_pmu;
+ 
+-	if (!cs_etm_is_etmv4(itr, cpu))
+-		goto out;
+-
+-	/* Get a handle on TRCIRD0 */
+-	snprintf(path, PATH_MAX, "cpu%d/%s",
+-		 cpu, metadata_etmv4_ro[CS_ETMV4_TRCIDR0]);
+-	err = perf_pmu__scan_file(cs_etm_pmu, path, "%x", &val);
++	if (cs_etm_is_etmv4(itr, cpu)) {
++		/* Get a handle on TRCIRD0 */
++		snprintf(path, PATH_MAX, "cpu%d/%s",
++			cpu, metadata_etmv4_ro[CS_ETMV4_TRCIDR0]);
++		err = perf_pmu__scan_file(cs_etm_pmu, path, "%x", &val);
++	} else {
++		/* Get a handle on ETMCCER */
++		snprintf(path, PATH_MAX, "cpu%d/%s",
++			 cpu, metadata_etmv3_ro[CS_ETM_ETMCCER]);
++		err = perf_pmu__scan_file(cs_etm_pmu, path, "%x", &val);
++	}
+ 
+ 	/* There was a problem reading the file, bailing out */
+ 	if (err != 1) {
+@@ -134,6 +159,8 @@ static int cs_etm_set_timestamp(struct auxtrace_record *itr,
+ 		goto out;
+ 	}
+ 
++
++	if (cs_etm_is_etmv4(itr, cpu)) {
+ 	/*
+ 	 * TRCIDR0.TSSIZE, bit [28-24], indicates whether global timestamping
+ 	 * is supported:
+@@ -141,10 +168,29 @@ static int cs_etm_set_timestamp(struct auxtrace_record *itr,
+ 	 *  0b00110 Implementation supports a maximum timestamp of 48bits.
+ 	 *  0b01000 Implementation supports a maximum timestamp of 64bits.
+ 	 */
+-	val &= GENMASK(28, 24);
+-	if (!val) {
+-		err = -EINVAL;
+-		goto out;
++		val &= GENMASK(28, 24);
++		if (!val) {
++			err = -EINVAL;
++			goto out;
++		}
++	} else {
++	/*
++	 * ETMCCER.TIMSTMP, bit [22], indicates whether timestamping
++	 * is supported:
++	 *  0b0 Timestamping is not implemented.
++	 *  0b1 Timestamping is implemented.
++	 *
++	 * ETMCCER.TSSIZE, bit [29], indicates timestamp size:
++	 *  0b0 Implementation supports a maximum timestamp of 48bits.
++	 *  0b1 Implementation supports a maximum timestamp of 64bits.
++	 */
++		/* Handle bit 22 */
++		u32 mask = 1 << 22;
++		val = (val & mask) >> 22;
++		if (!val) {
++			err = -EINVAL;
++			goto out;
++		}
+ 	}
+ 
+ 	/* All good, let the kernel know */
+@@ -613,6 +659,9 @@ static void cs_etm_get_metadata(int cpu, u32 *offset,
+ 		info->priv[*offset + CS_ETM_ETMTRACEIDR] =
+ 						coresight_get_trace_id(cpu);
+ 		/* Get read-only information from sysFS */
++                info->priv[*offset + CS_ETM_ETMCCR] =
++			cs_etm_get_ro(cs_etm_pmu, cpu,
++				      metadata_etmv3_ro[CS_ETM_ETMCCR]);
+ 		info->priv[*offset + CS_ETM_ETMCCER] =
+ 			cs_etm_get_ro(cs_etm_pmu, cpu,
+ 				      metadata_etmv3_ro[CS_ETM_ETMCCER]);
+diff --git a/tools/perf/util/cs-etm.h b/tools/perf/util/cs-etm.h
+index 650ecc2a6349..3bcd5a15cc5b 100644
+--- a/tools/perf/util/cs-etm.h
++++ b/tools/perf/util/cs-etm.h
+@@ -36,6 +36,7 @@ enum {
+ 	CS_ETM_ETMCR = CS_ETM_CPU + 1,
+ 	CS_ETM_ETMTRACEIDR,
+ 	/* RO, taken from sysFS */
++	CS_ETM_ETMCCR,
+ 	CS_ETM_ETMCCER,
+ 	CS_ETM_ETMIDR,
+ 	CS_ETM_PRIV_MAX,
+-- 
+2.17.1
+

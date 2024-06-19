@@ -1,0 +1,42 @@
+@startuml cs_etm_set_context_id
+
+skinparam shadowing false
+
+(*) --> if "ETMv4" then 
+	-->[true] "Récupérer la valeur\ndu registre de l'ETMv4" #LightSkyBlue
+        "Récupérer la valeur\ndu registre de l'ETMv4" --> if "Erreur de récupération" then
+		-->[true] "Retourner Erreur"
+		"Retourner Erreur" --> (*)
+	else 
+		-->[false] ===B===
+        endif
+else
+	-->[false] "Récupérer la valeur\ndu registre de l'ETMv3"
+        "Récupérer la valeur\ndu registre de l'ETMv3" --> if "Erreur de récupération" then
+		-->[true] "Retourner Erreur"
+	else
+		-->[false] ===B===
+	endif
+
+        if "ETMv4" then
+            -->[true] "Isolement du mot ETMv4\navec un masque"  #LightSkyBlue
+		"Isolement du mot ETMv4\navec un masque" --> if "Valeur == 0" then
+			-->[false] "Avertir le noyau Linux" #LightSkyBlue
+		else
+			-->[true] "Retourner Erreur"
+		endif
+        else
+            -->[false] "Isolement du mot ETMv3\navec un masque"
+            "Isolement du mot ETMv3\navec un masque" --> if "Valeur != 1" then
+		    -->[false] "Avertir le noyau Linux" #LightSkyBlue
+            else
+		    -->[true] "Retourner Erreur"
+	    endif
+            "Avertir le noyau Linux" --> (*)
+        endif
+endif
+
+@enduml
+
+"Étape déjà implémentée" as a #LightSkyBlue
+"Étape ajoutée" as b

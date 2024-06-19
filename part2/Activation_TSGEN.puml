@@ -1,0 +1,24 @@
+@startuml Activation_TSGEN
+
+skinparam shadowing false
+
+(*)  --> "Lecture propriété"
+
+if "TSGEN présent" then
+	-->[true] "Création regmap \n et initialisation"
+	if "error" then
+		-->[!error] "Activer TSGEN"
+		if "error" then
+			-->[error] (*)
+		else
+			-->[!error] "Retourner Erreur"
+		endif
+	else
+		-->[error] "Retourner Erreur"
+		"Retourner Erreur" --> (*)
+	endif
+else
+	-->[false] (*)
+endif
+
+@enduml

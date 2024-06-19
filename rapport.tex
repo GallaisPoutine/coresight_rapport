@@ -1,0 +1,97 @@
+%---------------------------------
+% Rapport de stage de fin d'études
+%---------------------------------
+
+% Document
+\documentclass[a4paper,11pt,titlepage]{report}
+
+\include{packages}
+
+% Macros
+\newcommand{\Author}{Raphaël GALLAIS-POU}
+\newcommand{\NomDocument}{Rapport de Stage de fin d'études}
+\newcommand{\VersionDocument}{1.0}
+\newcommand{\RevisionDocument}{2}
+
+\newcommand{\pathAutre}{img/other}
+\newcommand{\pathPartOne}{img/part1}
+\newcommand{\pathPartTwo}{img/part2}
+\newcommand{\pathPartThree}{img/part3}
+\newcommand{\pathPatchO}{img/appendix/patch0}
+\newcommand{\pathPatchOne}{img/appendix/patch1}
+\newcommand{\pathPatchTwo}{img/appendix/patch2}
+\newcommand{\pathPatchThree}{img/appendix/patch3}
+\newcommand{\pathPatchFour}{img/appendix/patch4}
+\newcommand{\pathPatchFive}{img/appendix/patch5}
+\newcommand{\pathGantt}{img/appendix}
+\newcommand{\patchResults}{img/appendix/results}
+
+% Make "Chapter N" disappear
+%\makeatletter
+%\def\@makechapterhead#1{%
+%  \vspace*{50\p@}%
+%  {\parindent \z@ \raggedright \normalfont
+%    \interlinepenalty\@M
+%    \Large \bfseries #1\par\nobreak
+%    \vskip 40\p@
+%  }}
+%\def\@makeschapterhead#1{%
+%  \vspace*{50\p@}%
+%  {\parindent \z@ \raggedright
+%    \normalfont
+%    \interlinepenalty\@M
+%    \Large \bfseries  #1\par\nobreak
+%    \vskip 40\p@
+%  }}
+%\makeatother
+
+\pagestyle{fancy}
+
+\fancyhf{}%
+\fancyhead[LO]{\bf \leftmark \medskip \smallskip}
+\fancyhead[RO]{\it \medskip \smallskip \rightmark}
+\fancyfoot[LO]{\sl { {\large \NomDocument \ version  \VersionDocument \ rév \RevisionDocument} }}
+\fancyfoot[RO]{\thepage/\pageref{LastPage}}
+\renewcommand{\footrulewidth}{0.4pt}% Line at the footer visible
+
+\setcounter{tocdepth}{4}
+\fancypagestyle{plain}{%
+	\fancyhf{}%
+        % Fix that
+        \fancyfoot[LO]{\sl { {\large \Author} }}
+	\fancyfoot[LO]{\sl { {\large \NomDocument \ version  \VersionDocument \ rév \RevisionDocument} }}
+	\fancyfoot[RO]{\thepage/\pageref{LastPage}}
+	\renewcommand{\headrulewidth}{0pt}
+	\renewcommand{\footrulewidth}{0.4pt}
+}
+
+
+\title{\NomDocument}
+\author{\Author}
+\date{\today}
+
+\begin{document}
+
+\include{pageDeGarde}
+%\include{tableVersions}
+
+\renewcommand{\contentsname}{Sommaire}
+\tableofcontents % Table des matières.
+\addcontentsline{toc}{section}{Sommaire}
+\listoffigures % Table des figures.
+%\addcontentsline{toc}{section}{Table des figures}
+
+\include{synthesis} % Fiche de synthèse du stage
+
+\include{prefa}
+\include{intro}
+\include{Part1}
+\include{Part2}
+\include{Part3}
+\include{conclusion}
+\include{annexes}
+
+\end{document}
+
+% --- END ---
+
